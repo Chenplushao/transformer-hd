@@ -19,6 +19,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import me.zhengjie.base.BaseEntity;
+import reactor.util.annotation.Nullable;
+
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -73,8 +75,8 @@ public class User extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "用户昵称")
     private String nickName;
 
+    @Nullable
     @Email
-    @NotBlank
     @ApiModelProperty(value = "邮箱")
     private String email;
 
@@ -90,11 +92,10 @@ public class User extends BaseEntity implements Serializable {
 
     @ApiModelProperty(value = "头像存储的路径", hidden = true)
     private String avatarPath;
-
+//    @NotBlank
     @ApiModelProperty(value = "密码")
     private String password;
 
-    @NotNull
     @ApiModelProperty(value = "是否启用")
     private Boolean enabled;
 

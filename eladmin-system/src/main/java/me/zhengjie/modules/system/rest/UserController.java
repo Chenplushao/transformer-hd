@@ -19,9 +19,12 @@ import cn.hutool.core.collection.CollectionUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import me.zhengjie.annotation.AnonymousAccess;
 import me.zhengjie.annotation.Log;
+import me.zhengjie.annotation.rest.AnonymousPostMapping;
 import me.zhengjie.config.RsaProperties;
 import me.zhengjie.modules.system.domain.Dept;
+import me.zhengjie.modules.system.domain.Job;
 import me.zhengjie.modules.system.service.DataService;
 import me.zhengjie.modules.system.domain.User;
 import me.zhengjie.exception.BadRequestException;
@@ -111,8 +114,31 @@ public class UserController {
         // 默认密码 123456
         resources.setPassword(passwordEncoder.encode("123456"));
         userService.create(resources);
+        return new ResponseEntity<>("ok",HttpStatus.OK);
+    }
+
+    @Log("注册用户")
+    @ApiOperation("注册用户")
+    @AnonymousAccess
+    @PostMapping("/register")
+    public ResponseEntity<Object> register(@Validated @RequestBody User user){
+       //预设一些不必要填写的值
+
+        user.setEnabled(true);
+        Dept dept=new Dept();
+        dept.setId(1L);
+        user.setDept(dept);
+        Set<Job> jobs=new HashSet<>();
+        Job job=new Job();
+        job.setId(13L);
+        jobs.add(job);
+        user.setJobs(jobs);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        userService.create(user);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
+
+
 
     @Log("修改用户")
     @ApiOperation("修改用户")
