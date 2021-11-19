@@ -28,7 +28,6 @@ public class EntityExistException extends RuntimeException {
     }
 
     private static String generateMessage(String entity, String field, String val) {
-        return StringUtils.capitalize(entity)
-                + " with " + field + " "+ val + " existed";
+        return " 您填写的 " + field + " "+ val + " 已被注册，请换一个";
     }
 }

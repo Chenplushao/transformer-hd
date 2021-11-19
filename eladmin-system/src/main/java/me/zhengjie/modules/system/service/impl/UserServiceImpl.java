@@ -38,6 +38,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotBlank;
 import java.io.File;
@@ -86,13 +87,15 @@ public class UserServiceImpl implements UserService {
     @Transactional(rollbackFor = Exception.class)
     public void create(User resources) {
         if (userRepository.findByUsername(resources.getUsername()) != null) {
-            throw new EntityExistException(User.class, "username", resources.getUsername());
+            throw new EntityExistException(User.class, "账号名", resources.getUsername());
         }
-        if (userRepository.findByEmail(resources.getEmail()) != null) {
-            throw new EntityExistException(User.class, "email", resources.getEmail());
+        if (resources.getEmail().equals("")) {
+            resources.setEmail(resources.getUsername()+"账号未注册邮箱");
+        } else if (userRepository.findByEmail(resources.getEmail()) != null) {
+            throw new EntityExistException(User.class, "邮箱", resources.getEmail());
         }
         if (userRepository.findByPhone(resources.getPhone()) != null) {
-            throw new EntityExistException(User.class, "phone", resources.getPhone());
+            throw new EntityExistException(User.class, "电话号码", resources.getPhone());
         }
         userRepository.save(resources);
     }
@@ -106,13 +109,13 @@ public class UserServiceImpl implements UserService {
         User user2 = userRepository.findByEmail(resources.getEmail());
         User user3 = userRepository.findByPhone(resources.getPhone());
         if (user1 != null && !user.getId().equals(user1.getId())) {
-            throw new EntityExistException(User.class, "username", resources.getUsername());
+            throw new EntityExistException(User.class, "账号名", resources.getUsername());
         }
         if (user2 != null && !user.getId().equals(user2.getId())) {
-            throw new EntityExistException(User.class, "email", resources.getEmail());
+            throw new EntityExistException(User.class, "邮箱", resources.getEmail());
         }
         if (user3 != null && !user.getId().equals(user3.getId())) {
-            throw new EntityExistException(User.class, "phone", resources.getPhone());
+            throw new EntityExistException(User.class, "电话号码", resources.getPhone());
         }
         // 如果用户的角色改变
         if (!resources.getRoles().equals(user.getRoles())) {
@@ -121,7 +124,7 @@ public class UserServiceImpl implements UserService {
             redisUtils.del(CacheKey.ROLE_AUTH + resources.getId());
         }
         // 如果用户被禁用，则清除用户登录信息
-        if(!resources.getEnabled()){
+        if (!resources.getEnabled()) {
             onlineUserService.kickOutForUsername(resources.getUsername());
         }
         user.setUsername(resources.getUsername());
@@ -190,8 +193,8 @@ public class UserServiceImpl implements UserService {
         // 验证文件上传的格式
         String image = "gif jpg png jpeg";
         String fileType = FileUtil.getExtensionName(multipartFile.getOriginalFilename());
-        if(fileType != null && !image.contains(fileType)){
-            throw new BadRequestException("文件格式错误！, 仅支持 " + image +" 格式");
+        if (fileType != null && !image.contains(fileType)) {
+            throw new BadRequestException("文件格式错误！, 仅支持 " + image + " 格式");
         }
         User user = userRepository.findByUsername(SecurityUtils.getCurrentUsername());
         String oldPath = user.getAvatarPath();
